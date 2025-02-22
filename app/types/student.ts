@@ -1,11 +1,11 @@
 export enum Gender {
-  MALE = 'MALE',
-  FEMALE = 'FEMALE'
+  MALE = "MALE",
+  FEMALE = "FEMALE",
 }
 
 export enum StudentRoleType {
-  MaleClassRepresentative = 'MaleClassRepresentative',
-  FemaleClassRepresentative = 'FemaleClassRepresentative'
+  MaleClassRepresentative = "MaleClassRepresentative",
+  FemaleClassRepresentative = "FemaleClassRepresentative",
 }
 
 export interface Achievement {
@@ -55,12 +55,13 @@ export interface Student {
   departmentId: string;
   departmentName: string;
   facilitySlots: FacilitySlot[];
-  
+
   // Parent Information
   parentName: string;
   parentMobile: string;
   parentEmail: string;
-  
+
   institutionId: string;
   institutionName: string;
+  isPresent?: boolean;
 }

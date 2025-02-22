@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Input } from '@/components/ui/input';
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -9,48 +9,70 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { students } from './data/students';
-import { useRouter } from 'next/navigation';
-import { Gender, Student } from './types/student';
+import { students } from "./data/students";
+import { useRouter } from "next/navigation";
+import { Gender, Student } from "./types/student";
+import { Switch } from "@/components/ui/switch";
+import StatisticsPanel from "@/components/attendanceComponents/StatisticsPanel";
+import Header from "@/components/attendanceComponents/Header";
 
 export default function Home() {
   const router = useRouter();
-  const [search, setSearch] = useState('');
-  const [departmentFilter, setDepartmentFilter] = useState('all');
-  const [genderFilter, setGenderFilter] = useState('all');
-  const [classFilter, setClassFilter] = useState('all');
+  const [search, setSearch] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [genderFilter, setGenderFilter] = useState("all");
+  const [classFilter, setClassFilter] = useState("all");
+  const [studentStatus, setStudentStatus] = useState<Record<string, boolean>>(
+    students.reduce(
+      (acc, student) => ({ ...acc, [student.id]: student?.isPresent }),
+      {}
+    )
+  );
+
+  const handleStatusChange = (studentId: string, isPresent: boolean) => {
+    setStudentStatus((prevState) => ({ ...prevState, [studentId]: isPresent }));
+  };
 
   const filteredStudents = students.filter((student) => {
-    const matchesSearch = 
+    const matchesSearch =
       student.name.toLowerCase().includes(search.toLowerCase()) ||
       student.email.toLowerCase().includes(search.toLowerCase()) ||
       student.id.toLowerCase().includes(search.toLowerCase());
-    
-    const matchesDepartment = departmentFilter === 'all' || student.departmentName === departmentFilter;
-    const matchesGender = genderFilter === 'all' || student.gender === genderFilter;
-    const matchesClass = classFilter === 'all' || student.className === classFilter;
-    
+
+    const matchesDepartment =
+      departmentFilter === "all" || student.departmentName === departmentFilter;
+    const matchesGender =
+      genderFilter === "all" || student.gender === genderFilter;
+    const matchesClass =
+      classFilter === "all" || student.className === classFilter;
+
     return matchesSearch && matchesDepartment && matchesGender && matchesClass;
   });
 
-  const departments = Array.from(new Set(students.map(s => s.departmentName)));
-  const classes = Array.from(new Set(students.map(s => s.className).filter(Boolean)));
+  const departments = Array.from(
+    new Set(students.map((s) => s.departmentName))
+  );
+  const classes = Array.from(
+    new Set(
+      students.map((s) => s.className).filter((cls): cls is string => !!cls)
+    )
+  );
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(part => part[0])
-      .join('')
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
       .toUpperCase();
   };
 
@@ -62,33 +84,33 @@ export default function Home() {
           Total: {filteredStudents.length}
         </Badge>
       </div>
-      
+      <div className="w-full py-5">
+        <StatisticsPanel />
+      </div>
+      <Header />
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Input
           placeholder="Search by name, email or ID..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        
-        <Select
-          value={departmentFilter}
-          onValueChange={setDepartmentFilter}
-        >
+
+        <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
           <SelectTrigger>
             <SelectValue placeholder="Department" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Departments</SelectItem>
             {departments.map((dept) => (
-              <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+              <SelectItem key={dept} value={dept}>
+                {dept}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Select
-          value={genderFilter}
-          onValueChange={setGenderFilter}
-        >
+        <Select value={genderFilter} onValueChange={setGenderFilter}>
           <SelectTrigger>
             <SelectValue placeholder="Gender" />
           </SelectTrigger>
@@ -99,17 +121,16 @@ export default function Home() {
           </SelectContent>
         </Select>
 
-        <Select
-          value={classFilter}
-          onValueChange={setClassFilter}
-        >
+        <Select value={classFilter} onValueChange={setClassFilter}>
           <SelectTrigger>
             <SelectValue placeholder="Class" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Classes</SelectItem>
             {classes.map((cls) => (
-              <SelectItem key={cls} value={cls}>{cls}</SelectItem>
+              <SelectItem key={cls} value={cls}>
+                {cls}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -137,21 +158,36 @@ export default function Home() {
                   <div className="flex items-center gap-3">
                     <Avatar>
                       <AvatarImage src={student.profile} />
-                      <AvatarFallback>{getInitials(student.name)}</AvatarFallback>
+                      <AvatarFallback>
+                        {getInitials(student.name)}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="font-medium">{student.name}</div>
-                      <div className="text-sm text-muted-foreground">{student.email}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {student.email}
+                      </div>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>{student.id}</TableCell>
                 <TableCell>{student.className}</TableCell>
                 <TableCell>{student.departmentName}</TableCell>
-                <TableCell>
-                  <Badge variant={student.isActive ? "default" : "secondary"}>
-                    {student.isActive ? "Active" : "Inactive"}
+                <TableCell className="flex justify-start gap-2">
+                  <Badge
+                    variant={
+                      studentStatus[student.id] ? "default" : "destructive"
+                    }
+                  >
+                    {studentStatus[student.id] ? "Present" : "Absent"}
                   </Badge>
+                  <Switch
+                    checked={studentStatus[student.id]}
+                    onCheckedChange={(checked) =>
+                      handleStatusChange(student.id, checked)
+                    }
+                    onClick={(e) => e.stopPropagation()} // Prevents row click event from firing
+                  />
                 </TableCell>
               </TableRow>
             ))}
